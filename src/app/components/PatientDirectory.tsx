@@ -3,7 +3,7 @@
 import {  useCallback, useEffect, useRef, useState } from "react";
 
 import { IoIosSearch } from "react-icons/io";
-
+import { CiFilter } from "react-icons/ci";
 
 interface Patient {
   patient_id: number;
@@ -35,6 +35,29 @@ interface FilterState {
     medical_issue: string[];
     age_range: string[];
   }
+  
+const getMedicalIssueColor = (issue: string) => {
+    const colors: Record<string, string> = {
+      fever: "bg-red-500",
+      headache: "bg-orange-500",
+      "sore throat": "bg-orange-500",
+      "sprained ankle": "bg-green-500",
+      rash: "bg-pink-500",
+      "ear infection": "bg-blue-400",
+      sinusitis: "bg-purple-500",
+      "allergic reaction": "bg-yellow-500",
+    };
+    return colors[issue.toLowerCase()] || "bg-gray-500";
+  };
+  
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
 export default function PatientDirectory() {
     const [data, setData] = useState<Patient[]>([]);
@@ -56,6 +79,79 @@ export default function PatientDirectory() {
   });
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      search,
+      searchFields: "patient_name,medical_issue,contact",
+      ...(sortField && { sort: `${sortField}:${sortDirection}` }),
+    });
+
+    // Add filters as query parameters
+    Object.entries(filters).forEach(([key, values]) => {
+      values.forEach((value: string) => {
+        params.append(key, value);
+      });
+    });
+
+    try {
+      const res = await fetch(`/api/data?${params.toString()}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const json: ApiResponse = await res.json();
+
+      if (json.error) {
+        throw new Error(json.error);
+      }
+
+      setData(json.data);
+      setTotal(json.total);
+      setHasNextPage(json.hasNextPage);
+      setHasPrevPage(json.hasPrevPage);
+      setTotalPages(json.totalPages);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error instanceof Error ? error.message : "Failed to fetch data");
+      setData([]);
+      setTotal(0);
+      setHasNextPage(false);
+      setHasPrevPage(false);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, limit, search, sortField, sortDirection, filters]);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1);
+      fetchData();
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [search]);
+
+  // Other effects
+  useEffect(() => {
+    fetchData();
+  }, [page, sortField, sortDirection, filters]);
 
       const handleSort = (field: string) => {
         if (sortField === field) {
@@ -153,19 +249,7 @@ export default function PatientDirectory() {
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 className='flex items-center gap-2 px-3 py-2 border border-black/80 rounded-lg text-sm hover:bg-gray-50'
               >
-                <svg
-                  className='h-4 w-4 text-black'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z'
-                  />
-                </svg>
+                <CiFilter className="text-xl" />
                 Filters
                 {getActiveFiltersCount() > 0 && (
                   <span className='bg-blue-500 text-black text-xs px-2 py-0.5 rounded-full'>
@@ -345,6 +429,134 @@ export default function PatientDirectory() {
             </div>
           )}
         </div>
+
+        {loading ? (
+          <div className='flex justify-center items-center py-12'>
+            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+            <span className='ml-3 text-gray-600'>Loading patients...</span>
+          </div>
+        ) : data.length === 0 ? (
+          <div className='text-center py-12'>
+            <svg
+              className='mx-auto h-12 w-12 text-black'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+              />
+            </svg>
+            <h3 className='mt-2 text-sm font-medium text-gray-900'>
+              No patients found
+            </h3>
+            <p className='mt-1 text-sm text-black'>
+              {search || getActiveFiltersCount() > 0
+                ? "Try adjusting your search or filters"
+                : "No patient data available"}
+            </p>
+          </div>
+        ) : (
+          <div className='bg-white rounded-lg border border-gray-200 overflow-hidden'>
+            <div className='overflow-x-auto'>
+              <table className='w-full min-w-full divide-y divide-gray-600'>
+                <thead className='bg-gray-50'>
+                  <tr>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                      ID
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                      Name
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden sm:table-cell'>
+                      Age
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                      Medical Issue
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden lg:table-cell'>
+                      Address
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden md:table-cell'>
+                      Phone
+                    </th>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden lg:table-cell'>
+                      Email
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='bg-white divide-y divide-gray-200'>
+                  {data.map((patient) => (
+                    <tr key={patient.patient_id} className='hover:bg-gray-50'>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                        ID-{String(patient.patient_id).padStart(4, "0")}
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap'>
+                        <div className='flex items-center'>
+                          <div className='flex-shrink-0 h-8 w-8 lg:h-10 lg:w-10'>
+                          
+                              <div className='h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-xs lg:text-sm'>
+                                {getInitials(patient.patient_name)}
+                              </div>
+                           
+                          </div>
+                          <div className='ml-2 lg:ml-4'>
+                            <div className='text-sm font-medium text-gray-900 truncate'>
+                              {patient.patient_name}
+                            </div>
+                            <div className='text-xs text-black sm:hidden'>
+                              Age: {patient.age} |{" "}
+                              {patient.contact[0]?.number || "No phone"}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell'>
+                        {patient.age}
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap'>
+                        <button
+                          onClick={() =>
+                            addFilter("medical_issue", patient.medical_issue)
+                          }
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white hover:opacity-80 transition-opacity ${getMedicalIssueColor(
+                            patient.medical_issue
+                          )}`}
+                        >
+                          <span className='truncate max-w-20'>
+                            {patient.medical_issue}
+                          </span>
+                        </button>
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell'>
+                        <span
+                          className=' block max-w-32'
+                          title={patient.contact[0]?.address || "N/A"}
+                        >
+                          {patient.contact[0]?.address || "N/A"}
+                        </span>
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell'>
+                        {patient.contact[0]?.number || "N/A"}
+                      </td>
+                      <td className='px-3 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell'>
+                        <span
+                          className=' block max-w-32'
+                          title={patient.contact[0]?.email || "N/A"}
+                        >
+                          {patient.contact[0]?.email || "N/A"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       
 </div>
     </div>
