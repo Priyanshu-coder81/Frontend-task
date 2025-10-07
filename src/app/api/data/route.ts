@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 
-
 interface Patient {
   patient_id: number;
   patient_name: string;

@@ -63,11 +63,12 @@ export default function PatientDirectory() {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<FilterState>({
@@ -425,6 +426,47 @@ export default function PatientDirectory() {
           )}
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className='mb-4 p-4 bg-red-50 border border-red-200 rounded-lg'>
+            <div className='flex items-center'>
+              <svg
+                className='h-5 w-5 text-red-400 mr-2'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                />
+              </svg>
+              <span className='text-red-800'>{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className='ml-auto text-red-600 hover:text-red-800'
+              >
+                <svg
+                  className='h-4 w-4'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Table View */}
         {loading ? (
           <div className='flex justify-center items-center py-12'>
             <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
@@ -460,25 +502,25 @@ export default function PatientDirectory() {
               <table className='w-full min-w-full divide-y divide-gray-600'>
                 <thead className='bg-gray-50'>
                   <tr>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider'>
                       ID
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider'>
                       Name
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden sm:table-cell'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider hidden sm:table-cell'>
                       Age
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider'>
                       Medical Issue
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden lg:table-cell'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider hidden lg:table-cell'>
                       Address
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden md:table-cell'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider hidden md:table-cell'>
                       Phone
                     </th>
-                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider hidden lg:table-cell'>
+                    <th className='px-3 lg:px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider hidden lg:table-cell'>
                       Email
                     </th>
                   </tr>
