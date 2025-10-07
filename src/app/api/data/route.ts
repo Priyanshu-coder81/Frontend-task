@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 
-type AnyObj = Record<string, any>;
 
 interface Patient {
   patient_id: number;
@@ -47,7 +46,6 @@ export async function GET(req: Request) {
       "contact",
     ];
     const sortParam = params.get("sort") ?? "";
-    const sortFields = params.get("sortFields")?.split(",") ?? [];
 
     // Collect filters: any param except reserved ones
     const reserved = new Set([
@@ -72,7 +70,7 @@ export async function GET(req: Request) {
     const allData: Patient[] = JSON.parse(raw);
 
     // Enhanced search functionality
-    let filtered = allData.filter((item) => {
+    const filtered = allData.filter((item) => {
       // Multi-field search
       if (search) {
         let matched = false;

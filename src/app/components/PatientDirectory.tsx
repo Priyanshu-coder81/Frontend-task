@@ -63,12 +63,11 @@ export default function PatientDirectory() {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
-  const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<FilterState>({
@@ -144,12 +143,12 @@ export default function PatientDirectory() {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [search]);
+  }, [search, fetchData]);
 
   // Other effects
   useEffect(() => {
     fetchData();
-  }, [page, limit, sortField, sortDirection, filters]);
+  }, [page, limit, sortField, sortDirection, filters, fetchData]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
