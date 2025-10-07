@@ -79,7 +79,7 @@ internship-task/
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Priyanshu-coder81/Frontend-task.git
    cd internship-task
    ```
 
