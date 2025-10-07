@@ -1,6 +1,6 @@
 "use client";
 
-import {  useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { IoIosSearch } from "react-icons/io";
 import { CiFilter } from "react-icons/ci";
@@ -18,54 +18,52 @@ interface Patient {
   medical_issue: string;
 }
 
-
 interface ApiResponse {
-    total: number;
-    page: number;
-    limit: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-    totalPages: number;
-    data: Patient[];
-    error?: string;
-  }
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  totalPages: number;
+  data: Patient[];
+  error?: string;
+}
 
-  
 interface FilterState {
-    medical_issue: string[];
-    age_range: string[];
-  }
-  
+  medical_issue: string[];
+  age_range: string[];
+}
+
 const getMedicalIssueColor = (issue: string) => {
-    const colors: Record<string, string> = {
-      fever: "bg-red-500",
-      headache: "bg-orange-500",
-      "sore throat": "bg-orange-500",
-      "sprained ankle": "bg-green-500",
-      rash: "bg-pink-500",
-      "ear infection": "bg-blue-400",
-      sinusitis: "bg-purple-500",
-      "allergic reaction": "bg-yellow-500",
-    };
-    return colors[issue.toLowerCase()] || "bg-gray-500";
+  const colors: Record<string, string> = {
+    fever: "bg-red-500",
+    headache: "bg-orange-500",
+    "sore throat": "bg-orange-500",
+    "sprained ankle": "bg-green-500",
+    rash: "bg-pink-500",
+    "ear infection": "bg-blue-400",
+    sinusitis: "bg-purple-500",
+    "allergic reaction": "bg-yellow-500",
   };
-  
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  return colors[issue.toLowerCase()] || "bg-gray-500";
+};
+
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 export default function PatientDirectory() {
-    const [data, setData] = useState<Patient[]>([]);
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
-    const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<Patient[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
@@ -151,18 +149,17 @@ export default function PatientDirectory() {
   // Other effects
   useEffect(() => {
     fetchData();
-  }, [page, sortField, sortDirection, filters]);
+  }, [page, limit, sortField, sortDirection, filters]);
 
-      const handleSort = (field: string) => {
-        if (sortField === field) {
-          setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-        } else {
-          setSortField(field);
-          setSortDirection("asc");
-        }
-      };
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
-  
   const addFilter = (type: keyof FilterState, value: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -197,7 +194,7 @@ export default function PatientDirectory() {
 
   return (
     <div className=' min-h-screen bg-white'>
-    {/* Header Section */}
+      {/* Header Section */}
       <div
         className='bg-blue-600 relative overflow-hidden
       '
@@ -215,25 +212,24 @@ export default function PatientDirectory() {
         </div>
       </div>
 
-{/* Hero Section */}
-<div className="px-8 py-6"> 
-
-    {/* Table view Button (future--> to add card view) */}
-    <div className="flex gap-8 mb-6">
-        <button className={`pb-2 text-lg font-medium border-b-2 transition-colors text-black border-blue-600`}>
+      {/* Hero Section */}
+      <div className='px-8 py-6'>
+        {/* Table view Button (future--> to add card view) */}
+        <div className='flex gap-8 mb-6'>
+          <button
+            className={`pb-2 text-lg font-medium border-b-2 transition-colors text-black border-blue-600`}
+          >
             Table View
-        </button>
-    </div>
+          </button>
+        </div>
 
+        {/* Search and filter bar */}
 
-
-{/* Search and filter bar */}
-
-<div className='mb-4'>
+        <div className='mb-4'>
           <div className='flex flex-col lg:flex-row lg:items-center gap-4 mb-3 text-black'>
             <div className='relative flex-1'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-              <IoIosSearch className="text-xl text-blue-600"/>
+                <IoIosSearch className='text-xl text-blue-600' />
               </div>
               <input
                 type='text'
@@ -249,7 +245,7 @@ export default function PatientDirectory() {
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
                 className='flex items-center gap-2 px-3 py-2 border border-black/80 rounded-lg text-sm hover:bg-gray-50'
               >
-                <CiFilter className="text-xl" />
+                <CiFilter className='text-xl' />
                 Filters
                 {getActiveFiltersCount() > 0 && (
                   <span className='bg-blue-500 text-black text-xs px-2 py-0.5 rounded-full'>
@@ -497,11 +493,9 @@ export default function PatientDirectory() {
                       <td className='px-3 lg:px-6 py-4 whitespace-nowrap'>
                         <div className='flex items-center'>
                           <div className='flex-shrink-0 h-8 w-8 lg:h-10 lg:w-10'>
-                          
-                              <div className='h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-xs lg:text-sm'>
-                                {getInitials(patient.patient_name)}
-                              </div>
-                           
+                            <div className='h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium text-xs lg:text-sm'>
+                              {getInitials(patient.patient_name)}
+                            </div>
                           </div>
                           <div className='ml-2 lg:ml-4'>
                             <div className='text-sm font-medium text-gray-900 truncate'>
@@ -557,8 +551,57 @@ export default function PatientDirectory() {
             </div>
           </div>
         )}
-      
-</div>
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className='flex flex-col sm:flex-row justify-between items-center mt-6 gap-4'>
+            <div className='text-sm text-gray-700'>
+              Showing {(page - 1) * limit + 1} to{" "}
+              {Math.min(page * limit, total)} of {total} patients
+            </div>
+
+            <div className='flex items-center gap-2'>
+              <button
+                disabled={!hasPrevPage}
+                onClick={() => setPage(page - 1)}
+                className='md:px-3 px-1 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                Previous
+              </button>
+
+              <div className='flex items-center gap-1'>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum =
+                    Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
+                  if (pageNum > totalPages) return null;
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-3 py-2 text-sm font-medium rounded-md ${
+                        pageNum === page
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                disabled={!hasNextPage}
+                onClick={() => setPage(page + 1)}
+                className='md:px-3 px-2 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
